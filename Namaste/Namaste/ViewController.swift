@@ -8,13 +8,6 @@
 import UIKit
 import Combine
 
-/*
- TODO:
- data model
- image data
- focus effect
- */
-
 final class ViewController: UIViewController {
 
     private let event = PassthroughSubject<ViewModel.Input, Never>()
@@ -59,7 +52,7 @@ final class ViewController: UIViewController {
                 widthDimension: .fractionalWidth(1),
                 heightDimension: .absolute(300))
             let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
-            group.interItemSpacing = .fixed(8)
+            group.interItemSpacing = .fixed(10)
 
             let headerSize = NSCollectionLayoutSize(
                 widthDimension: .fractionalWidth(1),
@@ -70,7 +63,7 @@ final class ViewController: UIViewController {
                 alignment: .topLeading)
             
             let section = NSCollectionLayoutSection(group: group)
-            section.contentInsets.top = 8
+            section.contentInsets.top = 10
             section.boundarySupplementaryItems = [header]
             
             return section
@@ -141,7 +134,7 @@ final class ViewController: UIViewController {
             welcomeView.widthAnchor.constraint(equalToConstant: 500),
             welcomeView.heightAnchor.constraint(equalToConstant: 500),
             tabStackView.centerXAnchor.constraint(equalTo: collectionView.centerXAnchor),
-            tabStackView.topAnchor.constraint(equalTo: view.topAnchor, constant: 40),
+            tabStackView.topAnchor.constraint(equalTo: view.topAnchor, constant: 50),
             tabStackView.heightAnchor.constraint(equalToConstant: 60),
             collectionView.topAnchor.constraint(equalTo: tabStackView.bottomAnchor, constant: 20),
             collectionView.leadingAnchor.constraint(equalTo: welcomeView.trailingAnchor, constant: 20),

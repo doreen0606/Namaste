@@ -7,7 +7,7 @@
 
 import UIKit
 
-actor TabModel {
+struct TabModel {
     var id: String { title }
     let title: String
     let curations: [CurationModel]
@@ -18,7 +18,7 @@ actor TabModel {
     }
 }
 
-actor CurationModel {
+struct CurationModel {
     let title: String
     let items: [ItemModel]
     
@@ -28,7 +28,7 @@ actor CurationModel {
     }
 }
 
-actor ItemModel {
+struct ItemModel {
     let title: String
     let image: UIImage?
     
