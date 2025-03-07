@@ -10,7 +10,6 @@ import Combine
 
 /*
  TODO:
- view -> tabStackView
  data model
  image data
  focus effect
@@ -42,8 +41,10 @@ final class ViewController: UIViewController {
     private let tabStackView: UIStackView = {
         let stv = UIStackView()
         stv.axis = .horizontal
-        stv.spacing = -10
-        stv.backgroundColor = .systemMint
+        stv.spacing = 5
+        stv.backgroundColor = .systemGray.withAlphaComponent(0.2)
+        stv.layer.cornerRadius = 20
+        stv.clipsToBounds = true
         return stv
     }()
     
@@ -96,9 +97,25 @@ final class ViewController: UIViewController {
             .reloadPage
             .sink { [weak self] _ in
                 self?.collectionView.reloadData()
+                self?.rebuildTabStack()
             }
             .store(in: &cancellables)
         event.send(.viewDidLoad)
+    }
+    
+    private func rebuildTabStack() {
+        tabStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        viewModel.tabs.forEach {
+            let btn = UIButton()
+            btn.titleLabel?.font = .systemFont(ofSize: 28, weight: .bold)
+            btn.setTitle($0.title, for: .normal)
+            btn.setTitleColor(.secondaryLabel, for: .normal)
+            btn.clipsToBounds = true
+            btn.layer.cornerRadius = 8
+            btn.backgroundColor = .systemGray.withAlphaComponent(0.5)
+            btn.widthAnchor.constraint(equalToConstant: 150).isActive = true
+            tabStackView.addArrangedSubview(btn)
+        }
     }
     
     private func setupUI() {
@@ -113,7 +130,7 @@ final class ViewController: UIViewController {
             welcomeView.heightAnchor.constraint(equalToConstant: 500),
             tabStackView.centerXAnchor.constraint(equalTo: collectionView.centerXAnchor),
             tabStackView.topAnchor.constraint(equalTo: view.topAnchor, constant: 40),
-            tabStackView.heightAnchor.constraint(equalToConstant: 100),
+            tabStackView.heightAnchor.constraint(equalToConstant: 80),
             collectionView.topAnchor.constraint(equalTo: tabStackView.bottomAnchor, constant: 20),
             collectionView.leadingAnchor.constraint(equalTo: welcomeView.trailingAnchor, constant: 20),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
