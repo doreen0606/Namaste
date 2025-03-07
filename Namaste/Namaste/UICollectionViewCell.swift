@@ -28,6 +28,7 @@ final class CollectionViewCell: UICollectionViewCell {
     private let titleLabel: UILabel = {
         let lbl = UILabel()
         lbl.textColor = .tertiaryLabel
+        lbl.font = .systemFont(ofSize: 40, weight: .bold)
         return lbl
     }()
     
@@ -51,6 +52,39 @@ final class CollectionViewCell: UICollectionViewCell {
             imageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
             titleLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             titleLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
+        ])
+    }
+}
+
+final class CollectionReusableHeader: UICollectionReusableView {
+    
+    static let reuseId: String = String(describing: CollectionReusableHeader.self)
+
+    override init(frame: CGRect) {
+        super.init(frame: .zero)
+        setupUI()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    func configure(with title: String?) {
+        titleLabel.text = title
+    }
+    
+    private let titleLabel: UILabel = {
+        let lbl = UILabel()
+        lbl.textColor = .tertiaryLabel
+        lbl.font = .systemFont(ofSize: 30, weight: .semibold)
+        return lbl
+    }()
+    
+    private func setupUI() {
+        addSubviews(titleLabel)
+        NSLayoutConstraint.activate([
+            titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
+            titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5)
         ])
     }
 }

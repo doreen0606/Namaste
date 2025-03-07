@@ -41,9 +41,9 @@ final class ViewController: UIViewController {
     private let tabStackView: UIStackView = {
         let stv = UIStackView()
         stv.axis = .horizontal
-        stv.spacing = 5
+        stv.spacing = 10
         stv.backgroundColor = .systemGray.withAlphaComponent(0.2)
-        stv.layer.cornerRadius = 20
+        stv.layer.cornerRadius = 10
         stv.clipsToBounds = true
         return stv
     }()
@@ -61,8 +61,17 @@ final class ViewController: UIViewController {
             let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
             group.interItemSpacing = .fixed(8)
 
+            let headerSize = NSCollectionLayoutSize(
+                widthDimension: .fractionalWidth(1),
+                heightDimension: .absolute(50))
+            let header = NSCollectionLayoutBoundarySupplementaryItem(
+                layoutSize: headerSize,
+                elementKind: UICollectionView.elementKindSectionHeader,
+                alignment: .topLeading)
+            
             let section = NSCollectionLayoutSection(group: group)
             section.contentInsets.top = 8
+            section.boundarySupplementaryItems = [header]
             
             return section
         }
@@ -71,6 +80,9 @@ final class ViewController: UIViewController {
         cv.dataSource = self
         cv.register(CollectionViewCell.self,
                     forCellWithReuseIdentifier: CollectionViewCell.reuseId)
+        cv.register(CollectionReusableHeader.self,
+                    forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
+                    withReuseIdentifier: CollectionReusableHeader.reuseId)
         return cv
     }()
     
@@ -107,7 +119,7 @@ final class ViewController: UIViewController {
         tabStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         viewModel.tabs.forEach {
             let btn = UIButton()
-            btn.titleLabel?.font = .systemFont(ofSize: 28, weight: .bold)
+            btn.titleLabel?.font = .systemFont(ofSize: 28, weight: .semibold)
             btn.setTitle($0.title, for: .normal)
             btn.setTitleColor(.secondaryLabel, for: .normal)
             btn.clipsToBounds = true
@@ -130,7 +142,7 @@ final class ViewController: UIViewController {
             welcomeView.heightAnchor.constraint(equalToConstant: 500),
             tabStackView.centerXAnchor.constraint(equalTo: collectionView.centerXAnchor),
             tabStackView.topAnchor.constraint(equalTo: view.topAnchor, constant: 40),
-            tabStackView.heightAnchor.constraint(equalToConstant: 80),
+            tabStackView.heightAnchor.constraint(equalToConstant: 60),
             collectionView.topAnchor.constraint(equalTo: tabStackView.bottomAnchor, constant: 20),
             collectionView.leadingAnchor.constraint(equalTo: welcomeView.trailingAnchor, constant: 20),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
@@ -155,6 +167,18 @@ extension ViewController: UICollectionViewDataSource {
         let item = viewModel.currentTab?.curations[indexPath.section].items[indexPath.item]
         cell.configure(with: item)
         return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        let header = collectionView.dequeueReusableSupplementaryView(
+            ofKind: UICollectionView.elementKindSectionHeader,
+            withReuseIdentifier: CollectionReusableHeader.reuseId,
+            for: indexPath)
+        if let header = header as? CollectionReusableHeader {
+            let title = viewModel.currentTab?.curations[indexPath.section].title
+            header.configure(with: title)
+        }
+        return header
     }
 }
 
