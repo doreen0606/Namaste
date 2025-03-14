@@ -18,17 +18,18 @@ final class ViewController: UIViewController {
         let lbl = UILabel()
         lbl.font = .systemFont(ofSize: 80, weight: .bold)
         lbl.textColor = .secondaryLabel
-        lbl.text = "Namaste!"
+        lbl.text = "Namaste"
         return lbl
     }()
     
     
-    private let welcomeView: UIView = {
-        let view = UIView()
-        view.backgroundColor = .systemGray.withAlphaComponent(0.2)
-        view.clipsToBounds = true
-        view.layer.cornerRadius = 20
-        return view
+    private let welcomeView: UIImageView = {
+        let imgv = UIImageView()
+        imgv.clipsToBounds = true
+        imgv.layer.cornerRadius = 20
+        imgv.image = UIImage(systemName: "moon.stars.fill")?.withRenderingMode(.alwaysTemplate)
+        imgv.tintColor = .systemGray
+        return imgv
     }()
     
     private let tabStackView: UIStackView = {
@@ -44,19 +45,19 @@ final class ViewController: UIViewController {
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewCompositionalLayout { sectionIndex, _ in
             let itemSize = NSCollectionLayoutSize(
-                widthDimension: .fractionalWidth(1 / 4),
+                widthDimension: .fractionalWidth(1),
                 heightDimension: .fractionalHeight(1))
             let item = NSCollectionLayoutItem(layoutSize: itemSize)
             
             let groupSize = NSCollectionLayoutSize(
-                widthDimension: .fractionalWidth(1),
+                widthDimension: .fractionalWidth(1 / 4),
                 heightDimension: .absolute(300))
             let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
-            group.interItemSpacing = .fixed(10)
+            group.edgeSpacing = .init(leading: nil, top: nil, trailing: .fixed(8), bottom: nil)
 
             let headerSize = NSCollectionLayoutSize(
                 widthDimension: .fractionalWidth(1),
-                heightDimension: .absolute(50))
+                heightDimension: .absolute(40))
             let header = NSCollectionLayoutBoundarySupplementaryItem(
                 layoutSize: headerSize,
                 elementKind: UICollectionView.elementKindSectionHeader,
@@ -64,7 +65,9 @@ final class ViewController: UIViewController {
             
             let section = NSCollectionLayoutSection(group: group)
             section.contentInsets.top = 10
+            section.contentInsets.leading = 20
             section.boundarySupplementaryItems = [header]
+            section.orthogonalScrollingBehavior = .continuous
             
             return section
         }
@@ -111,13 +114,7 @@ final class ViewController: UIViewController {
     private func rebuildTabStack() {
         tabStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         viewModel.tabs.forEach {
-            let btn = UIButton()
-            btn.titleLabel?.font = .systemFont(ofSize: 28, weight: .semibold)
-            btn.setTitle($0.title, for: .normal)
-            btn.setTitleColor(.secondaryLabel, for: .normal)
-            btn.clipsToBounds = true
-            btn.layer.cornerRadius = 8
-            btn.backgroundColor = .systemGray.withAlphaComponent(0.5)
+            let btn = TabItem($0.title)
             btn.widthAnchor.constraint(equalToConstant: 150).isActive = true
             tabStackView.addArrangedSubview(btn)
         }
@@ -128,16 +125,16 @@ final class ViewController: UIViewController {
                          tabStackView, collectionView)
         NSLayoutConstraint.activate([
             welcomeLabel.bottomAnchor.constraint(equalTo: welcomeView.topAnchor, constant: -10),
-            welcomeLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            welcomeLabel.centerXAnchor.constraint(equalTo: welcomeView.centerXAnchor),
             welcomeView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            welcomeView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            welcomeView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
             welcomeView.widthAnchor.constraint(equalToConstant: 500),
             welcomeView.heightAnchor.constraint(equalToConstant: 500),
             tabStackView.centerXAnchor.constraint(equalTo: collectionView.centerXAnchor),
             tabStackView.topAnchor.constraint(equalTo: view.topAnchor, constant: 50),
             tabStackView.heightAnchor.constraint(equalToConstant: 60),
             collectionView.topAnchor.constraint(equalTo: tabStackView.bottomAnchor, constant: 20),
-            collectionView.leadingAnchor.constraint(equalTo: welcomeView.trailingAnchor, constant: 20),
+            collectionView.leadingAnchor.constraint(equalTo: welcomeView.trailingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20)
         ])
@@ -176,3 +173,27 @@ extension ViewController: UICollectionViewDataSource {
 }
 
 extension ViewController: UICollectionViewDelegate {}
+
+final class TabItem: UIButton {
+    
+    init(_ title: String?) {
+        super.init(frame: .zero)
+        titleLabel?.font = .systemFont(ofSize: 28, weight: .semibold)
+        setTitle(title, for: .normal)
+        setTitleColor(.secondaryLabel, for: .normal)
+        clipsToBounds = true
+        layer.cornerRadius = 8
+        backgroundColor = .systemGray.withAlphaComponent(0.5)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
+        super.didUpdateFocus(in: context, with: coordinator)
+        coordinator.addCoordinatedAnimations {
+            self.backgroundColor = .systemGray.withAlphaComponent(self.isFocused ? 1 : 0.5)
+        }
+    }
+}

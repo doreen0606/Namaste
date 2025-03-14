@@ -22,13 +22,17 @@ final class ViewModel {
                     ItemModel(title: "Hatha", image: nil),
                     ItemModel(title: "Yin", image: nil),
                     ItemModel(title: "Restorative", image: nil),
-                    ItemModel(title: "Vinyasa", image: nil)
+                    ItemModel(title: "Vinyasa", image: nil),
+                    ItemModel(title: "Gentle", image: nil),
+                    ItemModel(title: "Flow", image: nil)
                 ]),
                 CurationModel(title: "Advanced", items: [
                     ItemModel(title: "Bikram", image: nil),
                     ItemModel(title: "Power", image: nil),
                     ItemModel(title: "Iyengar", image: nil),
-                    ItemModel(title: "Ashtanga", image: nil)
+                    ItemModel(title: "Ashtanga", image: nil),
+                    ItemModel(title: "Intensive", image: nil),
+                    ItemModel(title: "Precision", image: nil)
                 ]),
             ]),
             TabModel(title: "Workout", curations: [
