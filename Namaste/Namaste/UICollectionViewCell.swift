@@ -9,6 +9,8 @@ import UIKit
 
 final class CollectionViewCell: UICollectionViewCell {
     
+    static let reuseId: String = String(describing: CollectionViewCell.self)
+
     override init(frame: CGRect) {
         super.init(frame: .zero)
         setupUI()
@@ -18,13 +20,21 @@ final class CollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    static let reuseId: String = String(describing: CollectionViewCell.self)
-    
-    func configure(with item: ItemModel?) {
+    override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
+        super.didUpdateFocus(in: context, with: coordinator)
+        coordinator.addCoordinatedAnimations {
+            self.applyFocusEffectIfNeeded()
+        }
+    }
+        
+    func configure(with item: ItemModel?, itemIndex: Int) {
         titleLabel.text = item?.title
         imageView.image = item?.image
+        self.itemIndex = itemIndex
     }
     
+    private var itemIndex: Int?
+
     private let titleLabel: UILabel = {
         let lbl = UILabel()
         lbl.textColor = .tertiaryLabel
@@ -38,7 +48,21 @@ final class CollectionViewCell: UICollectionViewCell {
         return imgv
     }()
     
+    private func applyFocusEffectIfNeeded() {
+        transform = isFocused ? CGAffineTransform(scaleX: 1.15, y: 1.15) : .identity
+        layer.zPosition = isFocused ? 1 : 0
+        contentView.backgroundColor = .systemGray.withAlphaComponent(isFocused ? 1 : 0.2)
+        if itemIndex == 0, isFocused {
+            // slightly shift to left
+            anchorPoint = .init(x: 0.45, y: 0.5)
+        } else {
+            // center (default)
+            anchorPoint = .init(x: 0.5, y: 0.5)
+        }
+    }
+    
     private func setupUI() {
+        isUserInteractionEnabled = true
         contentView.addSubviews(titleLabel, imageView)
         contentView.clipsToBounds = true
         contentView.layer.cornerRadius = 20

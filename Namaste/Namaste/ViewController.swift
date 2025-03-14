@@ -32,15 +32,7 @@ final class ViewController: UIViewController {
         return imgv
     }()
     
-    private let tabStackView: UIStackView = {
-        let stv = UIStackView()
-        stv.axis = .horizontal
-        stv.spacing = 10
-        stv.backgroundColor = .systemGray.withAlphaComponent(0.2)
-        stv.layer.cornerRadius = 10
-        stv.clipsToBounds = true
-        return stv
-    }()
+    private let tabView = TabView()
     
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewCompositionalLayout { sectionIndex, _ in
@@ -91,7 +83,14 @@ final class ViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    private let viewModel: ViewModel
+    /// default focus position for page
+    override var preferredFocusEnvironments: [any UIFocusEnvironment] {
+        if let firstItem = collectionView.cellForItem(at: IndexPath(item: 0, section: 0)) {
+            return [firstItem]
+        } else {
+            return super.preferredFocusEnvironments
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -99,30 +98,26 @@ final class ViewController: UIViewController {
         setupBinding()
     }
     
+    private let viewModel: ViewModel
+    
     private func setupBinding() {
         let output = viewModel.binding(event.eraseToAnyPublisher())
         output
             .reloadPage
             .sink { [weak self] _ in
-                self?.collectionView.reloadData()
-                self?.rebuildTabStack()
+                guard let self = self else {
+                    return
+                }
+                collectionView.reloadData()
+                tabView.rebuildTabStack(with: viewModel.tabs)
             }
             .store(in: &cancellables)
         event.send(.viewDidLoad)
     }
     
-    private func rebuildTabStack() {
-        tabStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        viewModel.tabs.forEach {
-            let btn = TabItem($0.title)
-            btn.widthAnchor.constraint(equalToConstant: 150).isActive = true
-            tabStackView.addArrangedSubview(btn)
-        }
-    }
-    
     private func setupUI() {
         view.addSubviews(welcomeView, welcomeLabel,
-                         tabStackView, collectionView)
+                         tabView, collectionView)
         NSLayoutConstraint.activate([
             welcomeLabel.bottomAnchor.constraint(equalTo: welcomeView.topAnchor, constant: -10),
             welcomeLabel.centerXAnchor.constraint(equalTo: welcomeView.centerXAnchor),
@@ -130,10 +125,11 @@ final class ViewController: UIViewController {
             welcomeView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
             welcomeView.widthAnchor.constraint(equalToConstant: 500),
             welcomeView.heightAnchor.constraint(equalToConstant: 500),
-            tabStackView.centerXAnchor.constraint(equalTo: collectionView.centerXAnchor),
-            tabStackView.topAnchor.constraint(equalTo: view.topAnchor, constant: 50),
-            tabStackView.heightAnchor.constraint(equalToConstant: 60),
-            collectionView.topAnchor.constraint(equalTo: tabStackView.bottomAnchor, constant: 20),
+            tabView.leadingAnchor.constraint(equalTo: collectionView.leadingAnchor),
+            tabView.trailingAnchor.constraint(equalTo: collectionView.trailingAnchor),
+            tabView.topAnchor.constraint(equalTo: view.topAnchor, constant: 50),
+            tabView.heightAnchor.constraint(equalToConstant: 60),
+            collectionView.topAnchor.constraint(equalTo: tabView.bottomAnchor, constant: 20),
             collectionView.leadingAnchor.constraint(equalTo: welcomeView.trailingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20)
@@ -155,7 +151,7 @@ extension ViewController: UICollectionViewDataSource {
             return UICollectionViewCell()
         }
         let item = viewModel.currentTab?.curations[indexPath.section].items[indexPath.item]
-        cell.configure(with: item)
+        cell.configure(with: item, itemIndex: indexPath.item)
         return cell
     }
     
@@ -172,28 +168,8 @@ extension ViewController: UICollectionViewDataSource {
     }
 }
 
-extension ViewController: UICollectionViewDelegate {}
-
-final class TabItem: UIButton {
-    
-    init(_ title: String?) {
-        super.init(frame: .zero)
-        titleLabel?.font = .systemFont(ofSize: 28, weight: .semibold)
-        setTitle(title, for: .normal)
-        setTitleColor(.secondaryLabel, for: .normal)
-        clipsToBounds = true
-        layer.cornerRadius = 8
-        backgroundColor = .systemGray.withAlphaComponent(0.5)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
-        super.didUpdateFocus(in: context, with: coordinator)
-        coordinator.addCoordinatedAnimations {
-            self.backgroundColor = .systemGray.withAlphaComponent(self.isFocused ? 1 : 0.5)
-        }
+extension ViewController: UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, willDisplaySupplementaryView view: UICollectionReusableView, forElementKind elementKind: String, at indexPath: IndexPath) {
+        view.layer.zPosition = -1
     }
 }
