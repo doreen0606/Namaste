@@ -98,6 +98,15 @@ final class ViewController: UIViewController {
         setupBinding()
     }
     
+    @objc
+    func menuDidSelect() {
+        collectionView.scrollToItem(at: IndexPath(item: 0, section: 0), at: .left, animated: true)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            self.setNeedsFocusUpdate()
+            self.updateFocusIfNeeded()
+        }
+    }
+    
     private let viewModel: ViewModel
     
     private func setupBinding() {
@@ -134,6 +143,10 @@ final class ViewController: UIViewController {
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20)
         ])
+        
+        let menuRecognizer = UITapGestureRecognizer(target: self, action: #selector(menuDidSelect))
+        menuRecognizer.allowedPressTypes = [NSNumber(value: UIPress.PressType.menu.rawValue)]
+        view.addGestureRecognizer(menuRecognizer)
     }
 }
 
